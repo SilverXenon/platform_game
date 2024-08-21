@@ -14,7 +14,7 @@ int px = 1 + L;
 int py = W_H - P_H - L;
 int speed = 5;
 
-int jump_h = -20;
+int jump_h = -24;
 
 int jump = 0;
 
@@ -26,10 +26,11 @@ int onground = 1;
 
 int quit = 0;
 
-int score = 1;
+int score = 0; // 948 last level
 
 int l = 0,r = 0;
 
+int gen = 1;
 
 int platformX[S_W], platformY[S_H];
 
@@ -52,7 +53,8 @@ void collision()
     	}
 }
 
-void lose_game()
+
+int lose_game()
 {
 	for(int i = 0;i < score;i++)
 	{
@@ -60,9 +62,20 @@ void lose_game()
 		&& px + P_W > platformX[i] 
 		&& px < platformX[i] + S_W) 
         	{
-			quit = 1;
+			return 1;
         	}
 	}
+	return 0;
+}
+
+
+
+void reset_game(int lvl)
+{
+	score = lvl;
+	gen = 1;
+	px = 1 + L; 
+	py = W_H - P_H - L;
 }
 
 void player_move(SDL_Event *e) 
@@ -135,8 +148,8 @@ void generate_platforms()
 	{
 		platformX[i] = random_in_range(L + P_W, 
 					W_W - S_W - L);
-		platformY[i] = random_in_range(W_H - P_H - L - S_H
-				+ jump_h ,W_H - P_H - L - S_H);
+		platformY[i] = random_in_range(W_H/2
+				,W_H - P_H - L - S_H);
 
 		// range is not working ?????
 	}
@@ -192,7 +205,6 @@ int main(int argc,char* argv[])
 	// Event handler ( handle keys and window closing )
 	SDL_Event e;
 	
-	int gen = 1;
 
 	while(!quit)
 	{
@@ -205,10 +217,7 @@ int main(int argc,char* argv[])
 	
 		if(px > W_W - L - P_W)
 		{
-			gen = 1;
-			px = 1 + L; 
-			py = W_H - P_H - L;
-			score++;
+			reset_game(score + 1);
 		}
 
 		SDL_Rect player = {px,py,P_W,P_H};
@@ -222,7 +231,10 @@ int main(int argc,char* argv[])
 			gen = 0;
 		}
 
-		lose_game();
+		if(lose_game())
+		{
+			reset_game(score);
+		}
 
 		// draw platform
 		draw_platforms(renderer);
